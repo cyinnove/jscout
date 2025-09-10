@@ -4,16 +4,16 @@ import (
 	"github.com/cyinnove/logify"
 	"github.com/spf13/cobra"
 
-	"github.com/cyinnove/jscout/pkg/config"
-	"github.com/cyinnove/jscout/pkg/runner"
-	"github.com/cyinnove/jscout/utils"
+	"github.com/cyinnove/crawless/pkg/config"
+	"github.com/cyinnove/crawless/pkg/runner"
+	"github.com/cyinnove/crawless/utils"
 )
 
 func newRootCmd() *cobra.Command {
 	cfg := config.Defaults()
 
 	cmd := &cobra.Command{
-		Use:   "jscout",
+		Use:   "crawless",
 		Short: "Headless JS crawler for bug hunters",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if !cfg.NoBanner {

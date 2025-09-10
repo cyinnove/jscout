@@ -4,7 +4,7 @@ import (
     "testing"
     "time"
 
-    "github.com/cyinnove/jscout/pkg/model"
+    "github.com/cyinnove/crawless/pkg/model"
 )
 
 func TestDefaultOptions(t *testing.T) {

@@ -3,8 +3,8 @@ package lib
 import (
     "io"
 
-    "github.com/cyinnove/jscout/pkg/model"
-    "github.com/cyinnove/jscout/utils"
+    "github.com/cyinnove/crawless/pkg/model"
+    "github.com/cyinnove/crawless/utils"
 )
 
 // WriteOutput writes records using the same formats as the CLI (txt|jsonl|csv).

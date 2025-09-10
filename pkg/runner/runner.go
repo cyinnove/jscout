@@ -11,11 +11,11 @@ import (
 
 	"github.com/cyinnove/logify"
 
-	"github.com/cyinnove/jscout/pkg/config"
-	"github.com/cyinnove/jscout/pkg/engine"
+	"github.com/cyinnove/crawless/pkg/config"
+	"github.com/cyinnove/crawless/pkg/engine"
 
-	// "github.com/cyinnove/jscout/pkg/model"
-	"github.com/cyinnove/jscout/utils"
+	// "github.com/cyinnove/crawless/pkg/model"
+	"github.com/cyinnove/crawless/utils"
 )
 
 type Runner struct {

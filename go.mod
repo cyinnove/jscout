@@ -1,4 +1,4 @@
-module github.com/cyinnove/jscout
+module github.com/cyinnove/crawless
 
 go 1.24.0
 

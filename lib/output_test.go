@@ -6,7 +6,7 @@ import (
     "strings"
     "testing"
 
-    "github.com/cyinnove/jscout/pkg/model"
+    "github.com/cyinnove/crawless/pkg/model"
 )
 
 func TestWriteOutputTXTUnique(t *testing.T) {

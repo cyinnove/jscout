@@ -1,4 +1,4 @@
-# JScout – Headless JS Crawler for Bug Hunters
+# CRWALESS – Headless JS Crawler for Bug Hunters
 
 ```
    __  __                 _   
@@ -31,19 +31,19 @@ Fast, scope-aware, headless crawling framework to extract JavaScript files from 
 Requires Go 1.22+ and Chrome/Chromium.
 
 ```
-git clone https://github.com/cyinnove/jscout
-cd jscout
-go build -o jscout ./cmd/jscout
+git clone https://github.com/cyinnove/crawless
+cd crawless
+go build -o crawless ./cmd/crawless
 ```
 
-Binary will be at `./jscout` (Linux/macOS) or `jscout.exe` (Windows).
+Binary will be at `./crawless` (Linux/macOS) or `crawless.exe` (Windows).
 
 ### Use as a library
 
 Import the module and call the library API:
 
 ```
-go get github.com/cyinnove/jscout@latest
+go get github.com/cyinnove/crawless@latest
 ```
 
 Example:
@@ -53,7 +53,7 @@ package main
 
 import (
     "fmt"
-    "github.com/cyinnove/jscout/lib"
+    "github.com/cyinnove/crawless/lib"
 )
 
 func main() {
@@ -70,7 +70,7 @@ func main() {
 Build the image locally:
 
 ```
-docker build -t cyinnove/jscout:latest .
+docker build -t cyinnove/crawless:latest .
 ```
 
 Run:
@@ -78,11 +78,11 @@ Run:
 ```
 docker run --rm -it \
   --network host \
-  cyinnove/jscout:latest -u https://example.com -max-depth 1 -o -
+  cyinnove/crawless:latest -u https://example.com -max-depth 1 -o -
 ```
 
 Notes:
-- Image includes `chromium`; Chrome sandbox is disabled via `JSCOUT_NO_SANDBOX=1` for container compatibility.
+- Image includes `chromium`; Chrome sandbox is disabled via `CRWALESS_NO_SANDBOX=1` for container compatibility.
 - Use `-o -` to write results to stdout.
 - To read local files, mount volumes, e.g. `-v "$PWD:/data"` and `-l /data/seeds.txt`.
 
@@ -91,16 +91,16 @@ Notes:
 Basic:
 
 ```
-jscout -u https://news.ycombinator.com -max-depth 0 -format txt -o -
+crawless -u https://news.ycombinator.com -max-depth 0 -format txt -o -
 
 # Tip: see all flags
-jscout --help
+crawless --help
 ```
 
 Depth + scope file + concurrency:
 
 ```
-jscout -l seeds.txt \
+crawless -l seeds.txt \
   --scope-file scope.txt \
   --max-depth 2 --max-pages 500 \
   --concurrency 6 \
@@ -110,19 +110,19 @@ jscout -l seeds.txt \
 Stdin seeds:
 
 ```
-cat domains.txt | jscout --stdin --scheme https -o -
+cat domains.txt | crawless --stdin --scheme https -o -
 ```
 
 Include third-party JS:
 
 ```
-jscout -u https://example.com --js-in-scope=false -o -
+crawless -u https://example.com --js-in-scope=false -o -
 ```
 
 Custom User-Agent and Chrome path:
 
 ```
-jscout -u https://target.tld \
+crawless -u https://target.tld \
   --user-agent "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118 Safari/537.36" \
   --chrome-path /usr/bin/chromium-browser
 ```
@@ -161,8 +161,8 @@ Uses `github.com/cyinnove/logify`. To adjust verbosity in code, set `logify.MaxL
 
 ## Notes
 
-- On Linux, JScout verifies Chrome/Chromium availability. If not found and interactive, it prompts for a path; otherwise it errors with install hints.
-- In Docker, `JSCOUT_NO_SANDBOX=1` is set by default to make Chromium work as root. Unset it by overriding env if you run with a user that can use the sandbox.
+- On Linux, CRWALESS verifies Chrome/Chromium availability. If not found and interactive, it prompts for a path; otherwise it errors with install hints.
+- In Docker, `CRWALESS_NO_SANDBOX=1` is set by default to make Chromium work as root. Unset it by overriding env if you run with a user that can use the sandbox.
 
 ## License
 

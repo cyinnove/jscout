@@ -35,10 +35,10 @@ RUN go mod download
 COPY . .
 
 # Build binary
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o /usr/local/bin/jscout ./cmd/jscout
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o /usr/local/bin/crawless ./cmd/crawless
 
 # Env for headless Chrome sandboxing (disable in container)
-ENV JSCOUT_NO_SANDBOX=1
+ENV CRWALESS_NO_SANDBOX=1
 
 # Default command
-ENTRYPOINT ["/usr/local/bin/jscout"]
+ENTRYPOINT ["/usr/local/bin/crawless"]
