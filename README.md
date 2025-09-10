@@ -33,10 +33,37 @@ Requires Go 1.22+ and Chrome/Chromium.
 ```
 git clone https://github.com/cyinnove/jscout
 cd jscout
-go build -o jscout ./cmd/crawless
+go build -o jscout ./cmd/jscout
 ```
 
 Binary will be at `./jscout` (Linux/macOS) or `jscout.exe` (Windows).
+
+### Use as a library
+
+Import the module and call the library API:
+
+```
+go get github.com/cyinnove/jscout@latest
+```
+
+Example:
+
+```go
+package main
+
+import (
+    "fmt"
+    "github.com/cyinnove/jscout/lib"
+)
+
+func main() {
+    opts := lib.DefaultOptions()
+    opts.Seeds = []string{"https://example.com"}
+    recs, err := lib.Crawl(opts)
+    if err != nil { panic(err) }
+    fmt.Printf("found %d JS files\n", len(recs))
+}
+```
 
 ### Docker
 
@@ -55,7 +82,7 @@ docker run --rm -it \
 ```
 
 Notes:
-- Image includes `chromium`; Chrome sandbox is disabled via `CRAWLESS_NO_SANDBOX=1` for container compatibility.
+- Image includes `chromium`; Chrome sandbox is disabled via `JSCOUT_NO_SANDBOX=1` for container compatibility.
 - Use `-o -` to write results to stdout.
 - To read local files, mount volumes, e.g. `-v "$PWD:/data"` and `-l /data/seeds.txt`.
 
@@ -135,9 +162,11 @@ Uses `github.com/cyinnove/logify`. To adjust verbosity in code, set `logify.MaxL
 ## Notes
 
 - On Linux, JScout verifies Chrome/Chromium availability. If not found and interactive, it prompts for a path; otherwise it errors with install hints.
-- In Docker, `CRAWLESS_NO_SANDBOX=1` is set by default to make Chromium work as root. Unset it by overriding env if you run with a user that can use the sandbox.
+- In Docker, `JSCOUT_NO_SANDBOX=1` is set by default to make Chromium work as root. Unset it by overriding env if you run with a user that can use the sandbox.
 
 ## License
 
 MIT
+
+
 
