@@ -4,9 +4,9 @@ import (
 	"github.com/cyinnove/logify"
 	"github.com/spf13/cobra"
 
-	"jscout/config"
-	"jscout/runner"
-	"jscout/utils"
+	"github.com/cyinnove/jscout/config"
+	"github.com/cyinnove/jscout/runner"
+	"github.com/cyinnove/jscout/utils"
 )
 
 func newRootCmd() *cobra.Command {
@@ -79,3 +79,4 @@ func Execute() {
 		logify.Fatalf("%v", err)
 	}
 }
+

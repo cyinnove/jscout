@@ -9,13 +9,13 @@ import (
 	"strings"
 	"time"
 
-	"jscout/config"
-	"jscout/engine"
-
-	// "jscout/pkg/model"
-	"jscout/utils"
-
 	"github.com/cyinnove/logify"
+
+	"github.com/cyinnove/jscout/config"
+	"github.com/cyinnove/jscout/engine"
+
+	// "github.com/cyinnove/jscout/pkg/model"
+	"github.com/cyinnove/jscout/utils"
 )
 
 type Runner struct {

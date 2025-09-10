@@ -38,7 +38,7 @@ COPY . .
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o /usr/local/bin/jscout ./cmd/jscout
 
 # Env for headless Chrome sandboxing (disable in container)
-ENV CRAWLESS_NO_SANDBOX=1
+ENV JSCOUT_NO_SANDBOX=1
 
 # Default command
 ENTRYPOINT ["/usr/local/bin/jscout"]
