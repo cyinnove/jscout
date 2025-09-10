@@ -33,7 +33,7 @@ Requires Go 1.22+ and Chrome/Chromium.
 ```
 git clone https://github.com/cyinnove/jscout
 cd jscout
-go build -o jscout ./cmd/JSCOUT
+go build -o jscout ./cmd/jscout
 ```
 
 Binary will be at `./jscout` (Linux/macOS) or `jscout.exe` (Windows).
@@ -167,3 +167,6 @@ Uses `github.com/cyinnove/logify`. To adjust verbosity in code, set `logify.MaxL
 ## License
 
 MIT
+
+
+

@@ -51,7 +51,7 @@ func DefaultOptions() Options {
 }
 
 // Crawl runs the crawl with the provided options and returns discovered JS records.
-func Crawl(o Options) ([]model.JSRecord, error) {
+func Crawl(o Options) ([]*model.JSRecord, error) {
     seeds := make([]string, 0, len(o.Seeds))
     if o.Normalize {
         scheme := o.DefaultScheme
@@ -101,17 +101,22 @@ func Crawl(o Options) ([]model.JSRecord, error) {
     }
 
     if o.FilterJSInScope {
-        filtered := records[:0]
-        for _, r := range records {
-            if ju, err := url.Parse(r.JSURL); err == nil {
-                if utils.HostInScope(ju, allowed) {
-                    filtered = append(filtered, r)
-                }
-            }
-        }
-        records = filtered
+        records = FilterJSInScope(records, allowed)
     }
 
     return records, nil
+}
+
+// FilterJSInScope returns only JS records whose JSURL host matches allowed host suffixes.
+func FilterJSInScope(records []*model.JSRecord, allowed []string) []*model.JSRecord {
+    filtered := make([]*model.JSRecord, 0, len(records))
+    for _, r := range records {
+        if ju, err := url.Parse(r.JSURL); err == nil {
+            if utils.HostInScope(ju, allowed) {
+                filtered = append(filtered, r)
+            }
+        }
+    }
+    return filtered
 }
 

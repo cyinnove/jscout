@@ -36,7 +36,7 @@ type Engine struct {
 func New(opt Options) *Engine { return &Engine{opt: opt} }
 
 // Crawl runs a scoped crawl starting from seeds and returns discovered JS records.
-func (e *Engine) Crawl(seeds []string) ([]model.JSRecord, error) {
+func (e *Engine) Crawl(seeds []string) ([]*model.JSRecord, error) {
 	rootCtx := context.Background()
 
 	opts := append(chromedp.DefaultExecAllocatorOptions[:],
@@ -70,7 +70,7 @@ func (e *Engine) Crawl(seeds []string) ([]model.JSRecord, error) {
 	seen := make(map[string]struct{})
 	var mu sync.Mutex
 
-	results := make([]model.JSRecord, 0, 256)
+    results := make([]*model.JSRecord, 0, 256)
 	var resMu sync.Mutex
 
 	var processed int32
@@ -137,13 +137,13 @@ func (e *Engine) Crawl(seeds []string) ([]model.JSRecord, error) {
 				// Tab context with timeout
 				ctx, cancel := context.WithTimeout(browserCtx, e.opt.PageTimeout)
 				// Run collection
-				js, links, err := collectJSOnPage(ctx, item.u, e.opt.WaitAfterLoad, e.opt.UserAgent)
+                js, links, err := collectJSOnPage(ctx, item.u, e.opt.WaitAfterLoad, e.opt.UserAgent)
 				cancel()
 
 				if err == nil {
-					resMu.Lock()
-					results = append(results, js...)
-					resMu.Unlock()
+                    resMu.Lock()
+                    results = append(results, js...)
+                    resMu.Unlock()
 
 					// Enqueue links if within depth and within scope
 					if item.depth < e.opt.MaxDepth {
@@ -173,23 +173,24 @@ func (e *Engine) Crawl(seeds []string) ([]model.JSRecord, error) {
 }
 
 // collectJSOnPage visits a URL and returns JS resources and discovered links.
-func collectJSOnPage(ctx context.Context, pageURL string, waitAfterLoad time.Duration, userAgent string) ([]model.JSRecord, []string, error) {
+func collectJSOnPage(ctx context.Context, pageURL string, waitAfterLoad time.Duration, userAgent string) ([]*model.JSRecord, []string, error) {
 	if err := chromedp.Run(ctx, network.Enable()); err != nil {
 		return nil, nil, err
 	}
 
 	// Track JS responses
-	records := make([]model.JSRecord, 0, 16)
+    records := make([]*model.JSRecord, 0, 16)
 	chromedp.ListenTarget(ctx, func(ev interface{}) {
 		if recv, ok := ev.(*network.EventResponseReceived); ok {
 			if recv.Type == network.ResourceTypeScript && recv.Response != nil {
-				records = append(records, model.JSRecord{
-					JSURL:      recv.Response.URL,
-					SourcePage: pageURL,
-					Status:     recv.Response.Status,
-					MIME:       recv.Response.MimeType,
-					FromCache:  recv.Response.FromDiskCache || recv.Response.FromPrefetchCache || recv.Response.FromServiceWorker,
-				})
+                rec := &model.JSRecord{
+                    JSURL:      recv.Response.URL,
+                    SourcePage: pageURL,
+                    Status:     recv.Response.Status,
+                    MIME:       recv.Response.MimeType,
+                    FromCache:  recv.Response.FromDiskCache || recv.Response.FromPrefetchCache || recv.Response.FromServiceWorker,
+                }
+                records = append(records, rec)
 			}
 		}
 	})
