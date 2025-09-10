@@ -4,8 +4,8 @@ import (
 	"github.com/cyinnove/logify"
 	"github.com/spf13/cobra"
 
-	"github.com/cyinnove/jscout/config"
-	"github.com/cyinnove/jscout/runner"
+	"github.com/cyinnove/jscout/pkg/config"
+	"github.com/cyinnove/jscout/pkg/runner"
 	"github.com/cyinnove/jscout/utils"
 )
 
