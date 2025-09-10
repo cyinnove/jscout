@@ -1,13 +1,12 @@
 package main
 
 import (
+	"github.com/cyinnove/logify"
 	"github.com/spf13/cobra"
 
 	"jscout/config"
 	"jscout/runner"
 	"jscout/utils"
-
-	"github.com/cyinnove/logify"
 )
 
 func newRootCmd() *cobra.Command {
@@ -49,7 +48,7 @@ func newRootCmd() *cobra.Command {
 	// Crawl
 	cmd.Flags().IntVar(&cfg.MaxDepth, "max-depth", cfg.MaxDepth, "Max crawl depth from seeds")
 	cmd.Flags().IntVar(&cfg.MaxPages, "max-pages", cfg.MaxPages, "Max pages to visit (0 = unlimited)")
-	cmd.Flags().IntVar(&cfg.Concurrency, "concurrency", cfg.Concurrency, "Concurrent pages (tabs) to process")
+	cmd.Flags().IntVarP(&cfg.Concurrency, "concurrency", "c", cfg.Concurrency, "Concurrent pages (tabs) to process")
 	cmd.Flags().IntVar(&cfg.WaitSeconds, "wait", cfg.WaitSeconds, "Seconds to wait after load for dynamic scripts")
 	cmd.Flags().IntVar(&cfg.PageTimeoutSec, "page-timeout", cfg.PageTimeoutSec, "Per-page timeout in seconds")
 
