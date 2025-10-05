@@ -4,12 +4,12 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/cyinnove/crawless/pkg/engine"
-	"github.com/cyinnove/crawless/pkg/model"
-	"github.com/cyinnove/crawless/utils"
+	"github.com/cyinnove/jscout/pkg/engine"
+	"github.com/cyinnove/jscout/pkg/model"
+	"github.com/cyinnove/jscout/utils"
 )
 
-// Options controls crawling when using CRWALESS as a library.
+// Options controls crawling when using JSCOUT as a library.
 type Options struct {
 	// Seeds to crawl. If Normalize is true, seeds may be bare hosts and will be normalized.
 	Seeds []string

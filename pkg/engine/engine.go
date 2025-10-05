@@ -8,8 +8,8 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/cyinnove/crawless/pkg/model"
-	"github.com/cyinnove/crawless/utils"
+	"github.com/cyinnove/jscout/pkg/model"
+	"github.com/cyinnove/jscout/utils"
 
 	"github.com/chromedp/cdproto/emulation"
 	"github.com/chromedp/cdproto/network"
@@ -46,7 +46,7 @@ func (e *Engine) Crawl(seeds []string) ([]*model.JSRecord, error) {
 		chromedp.NoFirstRun,
 		chromedp.NoDefaultBrowserCheck,
 	)
-	if v := os.Getenv("CRWALESS_NO_SANDBOX"); v == "1" || v == "true" || v == "TRUE" {
+	if v := os.Getenv("JSCOUT_NO_SANDBOX"); v == "1" || v == "true" || v == "TRUE" {
 		opts = append(opts, chromedp.Flag("no-sandbox", true))
 	}
 	if e.opt.ChromePath != "" {

@@ -1,6 +1,6 @@
 package config
 
-// Config holds all runtime options for crawless.
+// Config holds all runtime options for jscout.
 type Config struct {
 	// Input
 	URL       string

@@ -7,7 +7,7 @@ import (
     "fmt"
     "io"
 
-    "github.com/cyinnove/crawless/pkg/model"
+    "github.com/cyinnove/jscout/pkg/model"
 )
 
 func WriteOutput(w io.Writer, format string, unique bool, records []*model.JSRecord) error {
