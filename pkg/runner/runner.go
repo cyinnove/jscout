@@ -80,7 +80,7 @@ func (r *Runner) Run() error {
 		allowed = append(allowed, lines...)
 	}
 	if len(allowed) == 0 {
-		// Default to seed hosts
+		// Default to seed hosts - include ALL seed hosts, not just the first one
 		seenHosts := map[string]struct{}{}
 		for _, s := range seeds {
 			u, err := url.Parse(s)

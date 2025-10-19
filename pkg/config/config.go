@@ -3,7 +3,8 @@ package config
 // Config holds all runtime options for jscout.
 type Config struct {
 	// Input
-	URL       string
+	URL       string   // deprecated, use URLs instead
+	URLs      []string // multiple URLs via -u flag
 	SeedsFile string
 	ReadStdin bool
 	Scheme    string

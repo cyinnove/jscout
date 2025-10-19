@@ -8,12 +8,12 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/cyinnove/jscout/pkg/model"
-	"github.com/cyinnove/jscout/utils"
-
 	"github.com/chromedp/cdproto/emulation"
 	"github.com/chromedp/cdproto/network"
 	"github.com/chromedp/chromedp"
+
+	"github.com/cyinnove/jscout/pkg/model"
+	"github.com/cyinnove/jscout/utils"
 )
 
 // Options configure the crawling engine.
@@ -43,6 +43,18 @@ func (e *Engine) Crawl(seeds []string) ([]*model.JSRecord, error) {
 		chromedp.Flag("headless", e.opt.Headless),
 		chromedp.Flag("disable-gpu", true),
 		chromedp.Flag("ignore-certificate-errors", true),
+		chromedp.Flag("disable-dev-shm-usage", true),
+		chromedp.Flag("disable-extensions", true),
+		chromedp.Flag("disable-plugins", true),
+		chromedp.Flag("disable-images", true),
+		chromedp.Flag("disable-javascript", false), // We need JS for crawling
+		chromedp.Flag("disable-web-security", true),
+		chromedp.Flag("disable-features", "VizDisplayCompositor"),
+		chromedp.Flag("no-first-run", true),
+		chromedp.Flag("no-default-browser-check", true),
+		chromedp.Flag("disable-background-timer-throttling", true),
+		chromedp.Flag("disable-backgrounding-occluded-windows", true),
+		chromedp.Flag("disable-renderer-backgrounding", true),
 		chromedp.NoFirstRun,
 		chromedp.NoDefaultBrowserCheck,
 	)
@@ -135,10 +147,12 @@ func (e *Engine) Crawl(seeds []string) ([]*model.JSRecord, error) {
 				mu.Unlock()
 
 				// Tab context with timeout
-				ctx, cancel := context.WithTimeout(browserCtx, e.opt.PageTimeout)
+				tabCtx, tabCancel := chromedp.NewContext(browserCtx)
+				ctx, cancel := context.WithTimeout(tabCtx, e.opt.PageTimeout)
 				// Run collection
 				js, links, err := collectJSOnPage(ctx, item.u, e.opt.WaitAfterLoad, e.opt.UserAgent)
 				cancel()
+				tabCancel()
 
 				if err == nil {
 					resMu.Lock()

@@ -1,4 +1,6 @@
-# JSCOUT – Headless JS Crawler for Bug Hunters
+# 🕷️ JSCOUT – Headless JS Crawler for Bug Hunters
+
+<div align="center">
 
 ```
    __  __                 _   
@@ -6,31 +8,59 @@
     \ \ \ / __/ _ \| | | | __|
  /\_/ /\ \ (_| (_) | |_| | |_ 
  \___/\__/\___\___/ \__,_|\__|  @CyInnove
-    
-Fast, scope-aware, headless crawling framework to extract Dynamic JS files.
 ```
 
-Fast, scope-aware, headless crawling framework to extract JavaScript files from target sites. Built with `chromedp` for realistic page loads and dynamic JS capture.
+**Fast, scope-aware, headless crawling framework to extract Dynamic JS files.**
 
-## Features
+[![Go Version](https://img.shields.io/badge/Go-1.22+-00ADD8?style=for-the-badge&logo=go)](https://golang.org/)
+[![License](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
+[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker)](https://www.docker.com/)
 
-- Headless browser crawl with Chrome/Chromium (chromedp)
-- Scoped BFS crawling (host suffix allow-list)
-- Extracts JS from network events (dynamic and static)
-- Flexible inputs: URL, list file, stdin; scheme auto-normalization
-- Output formats: txt, jsonl, csv (unique txt by default)
-- Concurrency control for faster crawling
-- Optional JS-in-scope filtering (keep only in-scope JS hosts)
-- Custom User-Agent, timeouts, and waits
-- Docker image with Chromium preinstalled
+</div>
 
-## Install
+---
 
-### Go
+## 🚀 Quick Start
 
-Requires Go 1.22+ and Chrome/Chromium.
+```bash
+# Install JSCOUT
+go install github.com/cyinnove/jscout/cmd/jscout@latest
 
+# Start crawling
+jscout -u https://example.com -max-depth 1 -o -
 ```
+
+---
+
+## ✨ Features
+
+| Feature | Description |
+|---------|-------------|
+| 🕸️ **Headless Browser** | Chrome/Chromium powered crawling with `chromedp` |
+| 🎯 **Scoped BFS** | Host suffix allow-list for targeted crawling |
+| ⚡ **Dynamic JS Extraction** | Captures both static and dynamic JavaScript files |
+| 📥 **Flexible Input** | URL, file list, or stdin with auto-normalization |
+| 📊 **Multiple Formats** | txt, jsonl, csv output (unique txt by default) |
+| 🔄 **Concurrency Control** | Configurable parallel crawling for speed |
+| 🎛️ **Smart Filtering** | Optional JS-in-scope filtering |
+| ⚙️ **Customizable** | User-Agent, timeouts, waits, and more |
+| 🐳 **Docker Ready** | Pre-built image with Chromium included |
+
+---
+
+## 📦 Installation
+
+### 🎯 Quick Install (Recommended)
+
+```bash
+go install github.com/cyinnove/jscout/cmd/jscout@latest
+```
+
+**Requirements:** Go 1.22+ and Chrome/Chromium
+
+### 🔨 Build from Source
+
+```bash
 git clone https://github.com/cyinnove/jscout
 cd jscout
 go build -o jscout ./cmd/jscout
@@ -38,15 +68,13 @@ go build -o jscout ./cmd/jscout
 
 Binary will be at `./jscout` (Linux/macOS) or `jscout.exe` (Windows).
 
-### Use as a library
+### 📚 Use as a Library
 
-Import the module and call the library API:
-
-```
+```bash
 go get github.com/cyinnove/jscout@latest
 ```
 
-Example:
+**Example Usage:**
 
 ```go
 package main
@@ -65,41 +93,42 @@ func main() {
 }
 ```
 
-### Docker
+### 🐳 Docker
 
-Build the image locally:
-
-```
+**Build locally:**
+```bash
 docker build -t cyinnove/jscout:latest .
 ```
 
-Run:
-
-```
+**Run:**
+```bash
 docker run --rm -it \
   --network host \
   cyinnove/jscout:latest -u https://example.com -max-depth 1 -o -
 ```
 
-Notes:
-- Image includes `chromium`; Chrome sandbox is disabled via `JSCOUT_NO_SANDBOX=1` for container compatibility.
-- Use `-o -` to write results to stdout.
-- To read local files, mount volumes, e.g. `-v "$PWD:/data"` and `-l /data/seeds.txt`.
+> **📝 Notes:**
+> - Image includes `chromium`; Chrome sandbox is disabled via `JSCOUT_NO_SANDBOX=1` for container compatibility
+> - Use `-o -` to write results to stdout
+> - To read local files, mount volumes: `-v "$PWD:/data"` and `-l /data/seeds.txt`
 
-## Usage
+---
 
-Basic:
+## 🎯 Usage Examples
 
-```
+### 🚀 Basic Usage
+
+```bash
 jscout -u https://news.ycombinator.com -max-depth 0 -format txt -o -
 
-# Tip: see all flags
+# See all available flags
 jscout --help
 ```
 
-Depth + scope file + concurrency:
+### 🔍 Advanced Crawling
 
-```
+**Depth + scope file + concurrency:**
+```bash
 jscout -l seeds.txt \
   --scope-file scope.txt \
   --max-depth 2 --max-pages 500 \
@@ -107,66 +136,97 @@ jscout -l seeds.txt \
   -format jsonl -o results.jsonl
 ```
 
-Stdin seeds:
-
-```
+**Stdin seeds:**
+```bash
 cat domains.txt | jscout --stdin --scheme https -o -
 ```
 
-Include third-party JS:
-
-```
+**Include third-party JS:**
+```bash
 jscout -u https://example.com --js-in-scope=false -o -
 ```
 
-Custom User-Agent and Chrome path:
-
-```
+**Custom User-Agent and Chrome path:**
+```bash
 jscout -u https://target.tld \
   --user-agent "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118 Safari/537.36" \
   --chrome-path /usr/bin/chromium-browser
 ```
 
-## CLI Flags
+---
 
-- Inputs
-  - `-u` single seed (URL or host)
-  - `-l` file with seeds (one per line)
-  - `--stdin` read seeds from STDIN
-  - `--scheme` default scheme for host-only seeds (default: https)
-- Scope
-  - `--scope` comma-separated allowed host suffixes (e.g., example.com,cdn.example.com)
-  - `--scope-file` file with allowed suffixes (one per line)
-  - Default scope is seed hosts
-- Crawl
-  - `--max-depth` crawl depth from seeds (default: 1)
-  - `--max-pages` limit pages (default: 100, 0 = unlimited)
-  - `--concurrency` concurrent pages (default: 4)
-  - `--wait` seconds after load for dynamic JS (default: 3)
-  - `--page-timeout` per-page timeout in seconds (default: 30)
-- Browser
-  - `--headless` run headless (default: true)
-  - `--chrome-path` explicit Chrome/Chromium path (optional)
-  - `--user-agent` custom UA string (optional)
-- Output
-  - `-o` output path or `-` for stdout (default: -)
-  - `--format` txt|jsonl|csv (default: txt)
-  - `--unique` de-duplicate JS URLs in txt mode (default: true)
-  - `--js-in-scope` only output JS whose host matches scope (default: true)
-  - `--no-banner` disable the startup ASCII banner
+## ⚙️ CLI Flags Reference
 
-## Logging
+### 📥 Input Options
+| Flag | Description | Default |
+|------|-------------|---------|
+| `-u` | Single seed (URL or host) | - |
+| `-l` | File with seeds (one per line) | - |
+| `--stdin` | Read seeds from STDIN | - |
+| `--scheme` | Default scheme for host-only seeds | `https` |
 
+### 🎯 Scope Options
+| Flag | Description | Default |
+|------|-------------|---------|
+| `--scope` | Comma-separated allowed host suffixes | Seed hosts |
+| `--scope-file` | File with allowed suffixes (one per line) | - |
+
+### 🕷️ Crawl Options
+| Flag | Description | Default |
+|------|-------------|---------|
+| `--max-depth` | Crawl depth from seeds | `1` |
+| `--max-pages` | Limit pages (0 = unlimited) | `100` |
+| `--concurrency` | Concurrent pages | `4` |
+| `--wait` | Seconds after load for dynamic JS | `3` |
+| `--page-timeout` | Per-page timeout in seconds | `30` |
+
+### 🌐 Browser Options
+| Flag | Description | Default |
+|------|-------------|---------|
+| `--headless` | Run headless | `true` |
+| `--chrome-path` | Explicit Chrome/Chromium path | Auto-detect |
+| `--user-agent` | Custom UA string | Default Chrome |
+
+### 📊 Output Options
+| Flag | Description | Default |
+|------|-------------|---------|
+| `-o` | Output path or `-` for stdout | `-` |
+| `--format` | Output format: txt\|jsonl\|csv | `txt` |
+| `--unique` | De-duplicate JS URLs in txt mode | `true` |
+| `--js-in-scope` | Only output JS whose host matches scope | `true` |
+| `--no-banner` | Disable the startup ASCII banner | `false` |
+
+---
+
+## 📝 Additional Information
+
+### 🔍 Logging
 Uses `github.com/cyinnove/logify`. To adjust verbosity in code, set `logify.MaxLevel` early in `main`. A `--log-level` flag can be added on request.
 
-## Notes
+### ⚠️ Important Notes
 
-- On Linux, JSCOUT verifies Chrome/Chromium availability. If not found and interactive, it prompts for a path; otherwise it errors with install hints.
-- In Docker, `JSCOUT_NO_SANDBOX=1` is set by default to make Chromium work as root. Unset it by overriding env if you run with a user that can use the sandbox.
+- **Linux**: JSCOUT verifies Chrome/Chromium availability. If not found and interactive, it prompts for a path; otherwise it errors with install hints.
+- **Docker**: `JSCOUT_NO_SANDBOX=1` is set by default to make Chromium work as root. Unset it by overriding env if you run with a user that can use the sandbox.
 
-## License
+---
 
-MIT
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## 📄 License
+
+This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
+
+---
+
+<div align="center">
+
+**Made with ❤️ by [@CyInnove](https://github.com/cyinnove)**
+
+[⭐ Star this repo](https://github.com/cyinnove/jscout) • [🐛 Report Bug](https://github.com/cyinnove/jscout/issues) • [💡 Request Feature](https://github.com/cyinnove/jscout/issues)
+
+</div>
 
 
 
