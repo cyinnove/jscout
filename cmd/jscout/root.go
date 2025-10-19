@@ -9,6 +9,7 @@ import (
 	"github.com/cyinnove/jscout/pkg/config"
 	"github.com/cyinnove/jscout/pkg/runner"
 	"github.com/cyinnove/jscout/utils"
+	"github.com/cyinnove/logify"
 )
 
 func newRootCmd() *cobra.Command {
@@ -18,6 +19,11 @@ func newRootCmd() *cobra.Command {
 		Use:   "jscout",
 		Short: "Headless JS crawler for bug hunters",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			// Set silent mode if enabled
+			if cfg.Silent {
+				logify.MaxLevel = logify.Error
+			}
+
 			if !cfg.NoBanner {
 				utils.PrintBanner()
 			}
@@ -74,6 +80,7 @@ func newRootCmd() *cobra.Command {
 	cmd.Flags().BoolVar(&cfg.Unique, "unique", cfg.Unique, "De-duplicate JS URLs in output (txt mode)")
 	cmd.Flags().BoolVar(&cfg.JSInScope, "js-in-scope", cfg.JSInScope, "Only output JS URLs whose host matches scope")
 	cmd.Flags().BoolVar(&cfg.NoBanner, "no-banner", cfg.NoBanner, "Disable startup banner")
+	cmd.Flags().BoolVar(&cfg.Silent, "silent", cfg.Silent, "Silent mode (suppress all log output except errors)")
 
 	// Map -u to cfg.SeedsRaw for runner
 	cmd.PreRun = func(cmd *cobra.Command, args []string) {

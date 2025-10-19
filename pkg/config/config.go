@@ -37,6 +37,7 @@ type Config struct {
 
 	// UI
 	NoBanner bool
+	Silent   bool
 }
 
 // Defaults returns a Config initialized with sane defaults.
