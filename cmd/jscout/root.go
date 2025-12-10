@@ -1,12 +1,15 @@
 package main
 
 import (
-	"github.com/cyinnove/logify"
+	"fmt"
+	"os"
+
 	"github.com/spf13/cobra"
 
 	"github.com/cyinnove/jscout/pkg/config"
 	"github.com/cyinnove/jscout/pkg/runner"
 	"github.com/cyinnove/jscout/utils"
+	"github.com/cyinnove/logify"
 )
 
 func newRootCmd() *cobra.Command {
@@ -16,15 +19,29 @@ func newRootCmd() *cobra.Command {
 		Use:   "jscout",
 		Short: "Headless JS crawler for bug hunters",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			// Set silent mode if enabled
+			if cfg.Silent {
+				logify.MaxLevel = logify.Error
+			}
+
 			if !cfg.NoBanner {
 				utils.PrintBanner()
 			}
 
-			// Linux-only Chrome verification
-			p, err := utils.EnsureChromePathLinux(cfg.ChromePath)
+			// Chrome verification on all platforms
+			p, err := utils.EnsureChromePath(cfg.ChromePath)
 			if err != nil {
-				return err
+				// Print error and exit without showing help
+				fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+				os.Exit(1)
 			}
+
+			// Validate that Chrome actually works
+			if err := utils.ValidateChromePath(p); err != nil {
+				fmt.Fprintf(os.Stderr, "Error: chrome validation failed: %v\n", err)
+				os.Exit(1)
+			}
+
 			cfg.ChromePath = p
 
 			r := runner.New(cfg)
@@ -36,7 +53,7 @@ func newRootCmd() *cobra.Command {
 	}
 
 	// Inputs
-	cmd.Flags().StringVarP(&cfg.URL, "url", "u", cfg.URL, "Single seed URL or host (e.g. https://example.com or example.com)")
+	cmd.Flags().StringSliceVarP(&cfg.URLs, "url", "u", cfg.URLs, "Seed URLs or hosts (can be used multiple times, e.g. -u https://example.com -u https://example2.com)")
 	cmd.Flags().StringVarP(&cfg.SeedsFile, "list", "l", cfg.SeedsFile, "File with seed URLs/hosts (one per line)")
 	cmd.Flags().BoolVar(&cfg.ReadStdin, "stdin", cfg.ReadStdin, "Read seeds from STDIN (one per line)")
 	cmd.Flags().StringVar(&cfg.Scheme, "scheme", cfg.Scheme, "Default scheme for seeds without scheme")
@@ -63,12 +80,11 @@ func newRootCmd() *cobra.Command {
 	cmd.Flags().BoolVar(&cfg.Unique, "unique", cfg.Unique, "De-duplicate JS URLs in output (txt mode)")
 	cmd.Flags().BoolVar(&cfg.JSInScope, "js-in-scope", cfg.JSInScope, "Only output JS URLs whose host matches scope")
 	cmd.Flags().BoolVar(&cfg.NoBanner, "no-banner", cfg.NoBanner, "Disable startup banner")
+	cmd.Flags().BoolVar(&cfg.Silent, "silent", cfg.Silent, "Silent mode (suppress all log output except errors)")
 
 	// Map -u to cfg.SeedsRaw for runner
 	cmd.PreRun = func(cmd *cobra.Command, args []string) {
-		if cfg.URL != "" {
-			cfg.SeedsRaw = append(cfg.SeedsRaw, cfg.URL)
-		}
+		cfg.SeedsRaw = append(cfg.SeedsRaw, cfg.URLs...)
 	}
 
 	return cmd
@@ -76,7 +92,7 @@ func newRootCmd() *cobra.Command {
 
 func Execute() {
 	if err := newRootCmd().Execute(); err != nil {
-		logify.Fatalf("%v", err)
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		os.Exit(1)
 	}
 }
-
