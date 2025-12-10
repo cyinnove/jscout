@@ -9,12 +9,12 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/cyinnove/jscout/pkg/model"
-	"github.com/cyinnove/jscout/utils"
-
 	"github.com/chromedp/cdproto/emulation"
 	"github.com/chromedp/cdproto/network"
 	"github.com/chromedp/chromedp"
+
+	"github.com/cyinnove/jscout/pkg/model"
+	"github.com/cyinnove/jscout/utils"
 )
 
 // Options configure the crawling engine.
@@ -162,10 +162,12 @@ func (e *Engine) Crawl(seeds []string) ([]*model.JSRecord, error) {
 				mu.Unlock()
 
 				// Tab context with timeout
-				ctx, cancel := context.WithTimeout(browserCtx, e.opt.PageTimeout)
+				tabCtx, tabCancel := chromedp.NewContext(browserCtx)
+				ctx, cancel := context.WithTimeout(tabCtx, e.opt.PageTimeout)
 				// Run collection
 				js, links, err := collectJSOnPage(ctx, item.u, e.opt.WaitAfterLoad, e.opt.UserAgent)
 				cancel()
+				tabCancel()
 
 				if err == nil {
 					resMu.Lock()
