@@ -184,10 +184,16 @@ func collectJSOnPage(ctx context.Context, pageURL string, waitAfterLoad time.Dur
 	seenURLs := make(map[string]struct{})
 	var mu sync.Mutex
 	
+	// Helper function to remove query parameters and fragments from URL
+	cleanURL := func(urlStr string) string {
+		// Remove query parameters and fragments
+		return strings.Split(strings.Split(urlStr, "#")[0], "?")[0]
+	}
+	
 	// Helper function to check if URL is a JavaScript file
 	isJavaScriptFile := func(urlStr string, mimeType string) bool {
 		// Remove query parameters and fragments
-		urlWithoutQuery := strings.Split(strings.Split(urlStr, "#")[0], "?")[0]
+		urlWithoutQuery := cleanURL(urlStr)
 		
 		// Check MIME type first
 		jsMimeTypes := []string{
@@ -214,7 +220,7 @@ func collectJSOnPage(ctx context.Context, pageURL string, waitAfterLoad time.Dur
 			parts := strings.Split(urlStr, "/")
 			if len(parts) > 0 {
 				filename := parts[len(parts)-1]
-				filenameWithoutQuery := strings.Split(strings.Split(filename, "#")[0], "?")[0]
+				filenameWithoutQuery := cleanURL(filename)
 				if strings.HasSuffix(strings.ToLower(filenameWithoutQuery), ".js") {
 					return true
 				}
@@ -236,10 +242,12 @@ func collectJSOnPage(ctx context.Context, pageURL string, waitAfterLoad time.Dur
 				
 				if isJS {
 					mu.Lock()
-					if _, exists := seenURLs[url]; !exists {
-						seenURLs[url] = struct{}{}
+					// Clean URL (remove query params and fragments) for storage and deduplication
+					cleanJsURL := cleanURL(url)
+					if _, exists := seenURLs[cleanJsURL]; !exists {
+						seenURLs[cleanJsURL] = struct{}{}
 						rec := &model.JSRecord{
-							JSURL:      url,
+							JSURL:      cleanJsURL, // Store without query params
 							SourcePage: pageURL,
 							Status:     recv.Response.Status,
 							MIME:       mimeType,
@@ -330,11 +338,16 @@ func collectJSOnPage(ctx context.Context, pageURL string, waitAfterLoad time.Dur
 			const baseURL = window.location.href;
 			const origin = window.location.origin;
 			
+			// Helper to clean URL (remove query params and fragments)
+			function cleanURL(urlStr) {
+				return urlStr.split('?')[0].split('#')[0];
+			}
+			
 			// Helper to check if URL is a JavaScript file
 			function isJSFile(urlStr) {
 				if (!urlStr || !urlStr.startsWith('http')) return false;
 				// Remove query params and fragments
-				const urlWithoutQuery = urlStr.split('?')[0].split('#')[0].toLowerCase();
+				const urlWithoutQuery = cleanURL(urlStr).toLowerCase();
 				// Must end with .js
 				return urlWithoutQuery.endsWith('.js');
 			}
@@ -343,7 +356,7 @@ func collectJSOnPage(ctx context.Context, pageURL string, waitAfterLoad time.Dur
 			Array.from(document.querySelectorAll('script[src]')).forEach(s => {
 				try {
 					const url = new URL(s.src, baseURL).href;
-					if (isJSFile(url)) jsURLs.add(url);
+					if (isJSFile(url)) jsURLs.add(cleanURL(url));
 				} catch(e) {}
 			});
 			
@@ -353,7 +366,7 @@ func collectJSOnPage(ctx context.Context, pageURL string, waitAfterLoad time.Dur
 				if (link.as === 'script' || isJSFile(href)) {
 					try {
 						const url = new URL(href, baseURL).href;
-						if (isJSFile(url)) jsURLs.add(url);
+						if (isJSFile(url)) jsURLs.add(cleanURL(url));
 					} catch(e) {}
 				}
 			});
@@ -384,7 +397,7 @@ func collectJSOnPage(ctx context.Context, pageURL string, waitAfterLoad time.Dur
 				while ((match = scriptSrcRegex.exec(html)) !== null) {
 					try {
 						const url = new URL(match[1], baseURL).href;
-						if (isJSFile(url)) jsURLs.add(url);
+						if (isJSFile(url)) jsURLs.add(cleanURL(url));
 					} catch(e) {}
 				}
 				// Look for href patterns in link tags - must end with .js
@@ -392,7 +405,7 @@ func collectJSOnPage(ctx context.Context, pageURL string, waitAfterLoad time.Dur
 				while ((match = linkHrefRegex.exec(html)) !== null) {
 					try {
 						const url = new URL(match[1], baseURL).href;
-						if (isJSFile(url)) jsURLs.add(url);
+						if (isJSFile(url)) jsURLs.add(cleanURL(url));
 					} catch(e) {}
 				}
 				// Look for Next.js chunk patterns in the HTML - must end with .js
@@ -400,7 +413,7 @@ func collectJSOnPage(ctx context.Context, pageURL string, waitAfterLoad time.Dur
 				while ((match = nextChunkRegex.exec(html)) !== null) {
 					try {
 						const url = new URL(match[0], origin).href;
-						if (isJSFile(url)) jsURLs.add(url);
+						if (isJSFile(url)) jsURLs.add(cleanURL(url));
 					} catch(e) {}
 				}
 			} catch(e) {}
@@ -412,7 +425,7 @@ func collectJSOnPage(ctx context.Context, pageURL string, waitAfterLoad time.Dur
 					if (script.src) {
 						try {
 							const url = new URL(script.src, baseURL).href;
-							if (isJSFile(url)) jsURLs.add(url);
+							if (isJSFile(url)) jsURLs.add(cleanURL(url));
 						} catch(e) {}
 					}
 				});
@@ -426,16 +439,18 @@ func collectJSOnPage(ctx context.Context, pageURL string, waitAfterLoad time.Dur
 	// Filter to ensure only .js files are added
 	mu.Lock()
 	for _, jsURL := range allJSURLs {
+		// URLs from DOM extraction are already cleaned, but double-check
+		cleanJsURL := cleanURL(jsURL)
+		
 		// Double-check it's actually a JS file
-		urlWithoutQuery := strings.Split(strings.Split(jsURL, "#")[0], "?")[0]
-		if !strings.HasSuffix(strings.ToLower(urlWithoutQuery), ".js") {
+		if !strings.HasSuffix(strings.ToLower(cleanJsURL), ".js") {
 			continue // Skip non-JS files
 		}
 		
-		if _, exists := seenURLs[jsURL]; !exists {
-			seenURLs[jsURL] = struct{}{}
+		if _, exists := seenURLs[cleanJsURL]; !exists {
+			seenURLs[cleanJsURL] = struct{}{}
 			rec := &model.JSRecord{
-				JSURL:      jsURL,
+				JSURL:      cleanJsURL, // Store without query params
 				SourcePage: pageURL,
 				Status:     200, // Assume success if referenced
 				MIME:       "application/javascript",
