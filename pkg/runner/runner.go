@@ -25,6 +25,8 @@ type Runner struct {
 func New(cfg config.Config) *Runner { return &Runner{Cfg: cfg} }
 
 func (r *Runner) Run() error {
+
+	start := time.Now()
 	// Collect all seeds
 	seedsRaw := make([]string, 0, len(r.Cfg.SeedsRaw)+4)
 	seedsRaw = append(seedsRaw, r.Cfg.SeedsRaw...)
@@ -154,6 +156,9 @@ func (r *Runner) Run() error {
 	if file != nil {
 		logify.Infof("Saved %d records to %s", len(records), r.Cfg.OutputPath)
 	}
+
+
+	logify.Infof("Crawl completed in %s", time.Since(start))
 	return nil
 }
 
