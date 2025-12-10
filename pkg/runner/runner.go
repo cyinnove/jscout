@@ -13,8 +13,7 @@ import (
 
 	"github.com/cyinnove/jscout/pkg/config"
 	"github.com/cyinnove/jscout/pkg/engine"
-
-	// "github.com/cyinnove/jscout/pkg/model"
+	"github.com/cyinnove/jscout/pkg/model"
 	"github.com/cyinnove/jscout/utils"
 )
 
@@ -82,13 +81,22 @@ func (r *Runner) Run() error {
 		allowed = append(allowed, lines...)
 	}
 	if len(allowed) == 0 {
-		// Default to seed hosts - include ALL seed hosts, not just the first one
+		// Default to seed hosts - extract base domain to include all subdomains
 		seenHosts := map[string]struct{}{}
 		for _, s := range seeds {
 			u, err := url.Parse(s)
 			if err != nil || u.Host == "" {
 				continue
 			}
+			// Extract base domain to include all subdomains (e.g., mercury.com includes acdn.mercury.com)
+			baseDomain := utils.ExtractBaseDomain(u.Host)
+			if baseDomain != "" {
+				if _, ok := seenHosts[baseDomain]; !ok {
+					allowed = append(allowed, baseDomain)
+					seenHosts[baseDomain] = struct{}{}
+				}
+			}
+			// Also add the exact host to ensure it's included
 			h := strings.ToLower(u.Host)
 			if _, ok := seenHosts[h]; !ok {
 				allowed = append(allowed, h)
@@ -98,27 +106,70 @@ func (r *Runner) Run() error {
 	}
 	r.Cfg.ScopeList = allowed
 
-	// Build engine options
-	opt := engine.Options{
-		AllowedHosts:  allowed,
-		ChromePath:    r.Cfg.ChromePath,
-		Headless:      r.Cfg.Headless,
-		UserAgent:     r.Cfg.UserAgent,
-		PageTimeout:   time.Duration(r.Cfg.PageTimeoutSec) * time.Second,
-		WaitAfterLoad: time.Duration(r.Cfg.WaitSeconds) * time.Second,
-		MaxDepth:      r.Cfg.MaxDepth,
-		MaxPages:      r.Cfg.MaxPages,
-		Concurrency:   r.Cfg.Concurrency,
-	}
-
-	eng := engine.New(opt)
-	records, err := eng.Crawl(seeds)
-	if err != nil {
-		return fmt.Errorf("crawl failed: %w", err)
+	// If scope was explicitly provided, use it for all seeds
+	// Otherwise, crawl each seed independently with its own scope
+	var allRecords []*model.JSRecord
+	
+	if len(allowed) > 0 && (r.Cfg.ScopeCSV != "" || r.Cfg.ScopeFile != "") {
+		// Explicit scope provided - crawl all seeds together with combined scope
+		opt := engine.Options{
+			AllowedHosts:  allowed,
+			ChromePath:    r.Cfg.ChromePath,
+			Headless:      r.Cfg.Headless,
+			UserAgent:     r.Cfg.UserAgent,
+			PageTimeout:   time.Duration(r.Cfg.PageTimeoutSec) * time.Second,
+			WaitAfterLoad: time.Duration(r.Cfg.WaitSeconds) * time.Second,
+			MaxDepth:      r.Cfg.MaxDepth,
+			MaxPages:      r.Cfg.MaxPages,
+			Concurrency:   r.Cfg.Concurrency,
+		}
+		eng := engine.New(opt)
+		records, err := eng.Crawl(seeds)
+		if err != nil {
+			return fmt.Errorf("crawl failed: %w", err)
+		}
+		allRecords = records
+	} else {
+		// No explicit scope - crawl each seed independently with its own scope
+		for _, seed := range seeds {
+			u, err := url.Parse(seed)
+			if err != nil || u.Host == "" {
+				continue
+			}
+			
+			// Build scope for this specific seed
+			seedAllowed := make([]string, 0, 4)
+			baseDomain := utils.ExtractBaseDomain(u.Host)
+			if baseDomain != "" {
+				seedAllowed = append(seedAllowed, baseDomain)
+			}
+			h := strings.ToLower(u.Host)
+			seedAllowed = append(seedAllowed, h)
+			
+			opt := engine.Options{
+				AllowedHosts:  seedAllowed,
+				ChromePath:    r.Cfg.ChromePath,
+				Headless:      r.Cfg.Headless,
+				UserAgent:     r.Cfg.UserAgent,
+				PageTimeout:   time.Duration(r.Cfg.PageTimeoutSec) * time.Second,
+				WaitAfterLoad: time.Duration(r.Cfg.WaitSeconds) * time.Second,
+				MaxDepth:      r.Cfg.MaxDepth,
+				MaxPages:      r.Cfg.MaxPages,
+				Concurrency:   r.Cfg.Concurrency,
+			}
+			eng := engine.New(opt)
+			records, err := eng.Crawl([]string{seed})
+			if err != nil {
+				logify.Infof("Warning: Failed to crawl %s: %v", seed, err)
+				continue
+			}
+			allRecords = append(allRecords, records...)
+		}
 	}
 
 	// Optional JS host filtering by scope
-	if r.Cfg.JSInScope {
+	records := allRecords
+	if r.Cfg.JSInScope && len(allowed) > 0 {
 		filtered := records[:0]
 		for _, rec := range records {
 			ju, err := url.Parse(rec.JSURL)
